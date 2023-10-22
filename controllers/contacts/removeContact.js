@@ -6,11 +6,9 @@ const removeContact =  async (req, res, next) => {
     try {
       const { contactId } = req.params;
       const result = await Contact.findByIdAndRemove(contactId);
-      
       if (!result) {
         throw createError(404);
       }
-  
       res.json({
         message : 'deleted'  });
     } catch (error) {
@@ -18,4 +16,4 @@ const removeContact =  async (req, res, next) => {
     }
 };
 
-module.exports = removeContact;
+module.exports = removeContact;      
