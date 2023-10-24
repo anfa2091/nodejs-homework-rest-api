@@ -1,19 +1,54 @@
-const express = require('express');
-const { basedir } = global;
-const crtl = require(`${basedir}/controllers/contacts`);
-const { crtlWrapper } = require(`${basedir}/helpers`);
-const router = express.Router()
+const express = require("express");
 
-router.get('/', crtlWrapper(crtl.getAllContacts));
+const ctrl = require(`../../controllers/contacts`);
+const ctrlU = require(`../../controllers/users`);
 
-router.get('/:contactId', crtlWrapper(crtl.getContactById));
+const { ctrlWrapper } = require('../../helpers');
+const { auth } = require('../../middlewares');
 
-router.post('/', crtlWrapper(crtl.addContact));
+const router = express.Router();
+const invalidatedTokens = new Set();
 
-router.delete('/:contactId', crtlWrapper(crtl.removeContact));
 
-router.put('/:contactId', crtlWrapper(crtl.updateContactById));
+const validToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
 
-router.patch('/:contactId/favorite', crtlWrapper(crtl.updateStatusContact));
+  if (invalidatedTokens.has(token)) {
+    return res.status(401).json({
+      status: "error",
+      code: 401,
+      message: "Unauthorized: Invalid token",
+      data: "Unauthorized",
+    });
+  }
+  next();
+};
+
+const logout = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  invalidatedTokens.add(token);
+  console.log(Array.from(invalidatedTokens));
+  res.status(204).json({
+    status: "successs",
+    code: 204,
+    message: "Logout: successful",
+    data:"success"
+  });
+};
+
+router.post("/users/signup", ctrlWrapper(ctrlU.signup));
+router.post("/users/login", ctrlWrapper(ctrlU.login));
+router.get("/users/current", validToken, auth, ctrlWrapper(ctrlU.me));
+router.post("/users/logout", validToken, auth, logout);
+
+router.get("/contacts", validToken, auth, ctrlWrapper(ctrl.userAllContacts));
+router.get("/contacts/:contactId", validToken, auth, ctrlWrapper(ctrl.getContactById));
+router.post("/contacts/", validToken, auth, ctrlWrapper(ctrl.addContact));
+router.delete("/contacts/:contactId", validToken, auth, ctrlWrapper(ctrl.removeContact));
+router.put("/contacts/:contactId", validToken, auth, ctrlWrapper(ctrl.updateContactById));
+router.patch("/contacts/:contactId/favorite", validToken, auth, ctrlWrapper(ctrl.updateStatusContact));
 
 module.exports = router;

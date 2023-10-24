@@ -1,7 +1,7 @@
-const createError = require('./createError');
-const crtlWrapper = require('./ctrlWrapper');
+const createError = require("./createError");
+const ctrlWrapper = require("./ctrlWrapper");
 
 module.exports = {
-    createError,
-    crtlWrapper,
-}
+  createError,
+  ctrlWrapper,
+};

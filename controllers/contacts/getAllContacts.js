@@ -1,9 +1,17 @@
-const { basedir } = global;
-const { Contact } = require(`${basedir}/models/contact`);
+const ContactModel = require("../../models/contact")
+require("dotenv").config();
+
 
 const getAllContacts = async (req, res, next) => {
-    const result = await Contact.find();
-    res.json(result)    
+  try {
+    const contacts = await ContactModel.find();
+    res.status(200).json(contacts);
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
 module.exports = getAllContacts;
